@@ -18,10 +18,9 @@ ENV PVPN_USERNAME=${PVPN_USERNAME} \
 COPY app /app
 COPY pvpn-cli /root/.pvpn-cli
 
-# Copy the change_proton_privoxy_server.sh script into the container
-COPY proton-privoxy/app/scripts/change_proton_privoxy_server.sh /usr/local/bin/scripts/change_proton_privoxy_server.sh
-# Copy the test-vpn.sh script into the container
-COPY proton-privoxy/app/scripts/test-vpn.sh /usr/local/bin/scripts/test-vpn.sh
+RUN apk --update add coreutils openvpn privoxy procps python3 runit git \
+    && python3 -m ensurepip \
+    && pip3 install git+https://github.com/Rafficer/linux-cli-community.git@v$PVPN_CLI_VER
 
 # Ensure the scripts are executable
 RUN chmod +x /usr/local/bin/scripts/change_proton_privoxy_server.sh
