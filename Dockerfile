@@ -2,12 +2,12 @@ FROM alpine:3.16
 LABEL maintainer="Walter Leibbrandt"
 LABEL version="0.4.3"
 EXPOSE 8080
-
+ENV NO_PROXY=localhost,127.0.0.1,registry-1.docker.io,auth.docker.io
 ARG PVPN_CLI_VER=2.2.12
 ENV PVPN_USERNAME=${PVPN_USERNAME} \
-    PVPN_USERNAME_FILE=.env \
+    # PVPN_USERNAME_FILE=.env \
     PVPN_PASSWORD=${PVPN_PASSWORD} \
-    PVPN_PASSWORD_FILE=.env \
+    # PVPN_PASSWORD_FILE=.env \
     PVPN_TIER=2 \
     PVPN_PROTOCOL=udp \
     PVPN_CMD_ARGS="connect --fastest" \
@@ -42,7 +42,41 @@ RUN if [ -L /app/proton-privoxy/templates ]; then \
     fi
 
 
+RUN apk add --no-cache ip6tables iptables curl
+# # Ensure the scripts are executable
+# RUN chmod +x /app/change_proton_privoxy_server.sh
+# RUN chmod +x /app/test-vpn.sh
+
 # RUN apk add --no-cache ip6tables iptables curl
+
+# # # Verify ip6tables-save is available
+# RUN which ip6tables-save || (echo "ip6tables-save not found" && exit 1)
+
+# # # Save iptables rules
+# RUN mkdir -p /etc/iptables \
+#         && iptables-save > /etc/iptables/rules.v4 \
+#         && ip6tables-save > /etc/iptables/rules.v6
+
+# # Check if the symbolic link exists before creating it
+# RUN [ ! -L /app/proton-privoxy/templates ] && ln -s /app/source /app/proton-privoxy/templates \
+#      || echo "Symbolic link already exists"
+
+# # Ensure symbolic link creation does not fail
+# RUN [ ! -e /app/proton-privoxy/templates ] || rm -rf /app/proton-privoxy/templates \
+#      && ln -sf /app/source /app/proton-privoxy/templates
+
+# # Check if ip6tables exists, if not install it
+# RUN command -v ip6tables >/dev/null 2>&1 || (apk update && apk add ip6tables iptables)
+
+# # Ensure symbolic link creation does not fail
+# RUN if [ -L /app/proton-privoxy/templates ]; then \
+#         echo "Symbolic link already exists"; \
+#     elif [ -e /app/proton-privoxy/templates ]; then \
+#         rm -rf /app/proton-privoxy/templates && ln -s /path/to/source /app/proton-privoxy/templates; \
+#     else \
+#         ln -s /path/to/source /app/proton-privoxy/templates; \
+#     fi
+
 
 # Run the application
 CMD ["runsvdir", "/app"]
